@@ -15,8 +15,8 @@ import javax.xml.bind.DatatypeConverter;
 public class TestEncryptDecrypt {
     public static void main(String args[]) { //arg0 = site id ; arg1 =key
         System.out.println("Inputs = " + args[0] + " , " + args[1]);
-        String siteID = args[0]; // "ebtraintst";
-        String rawKey = args[1]; //"BADC2A10ECD5C86D16232F4FFB73573189E03E7ABFC4FD10";
+        String siteID = args[0]; // "garbageText";
+        String rawKey = args[1]; //"BADC2A10ECD5C86D16232F4FFB73573189E03E7ABFC4FD10"; temp garbage key
         byte [] rawKeyBytes = DatatypeConverter.parseHexBinary(rawKey);
         byte [] siteIDArray = siteID.getBytes();
         
