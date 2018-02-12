@@ -21,11 +21,12 @@ public class TestEncryptDecrypt {
         byte [] siteIDArray = siteID.getBytes();
         
         EncryptDecrypt ed = new EncryptDecrypt(rawKey);
+        EncryptDecrypt de = new EncryptDecrypt(rawKey);
         String  encryptedEncodedString;
         String plainText = null;
         try {
             encryptedEncodedString =  ed.encrypt(siteIDArray);
-            plainText = ed.decrypt(encryptedEncodedString);
+            plainText = de.decrypt(encryptedEncodedString);
             System.out.println("Plain Text : " + plainText);
         }
         catch (Exception ex) {

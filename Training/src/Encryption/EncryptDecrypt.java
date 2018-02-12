@@ -31,7 +31,6 @@ public class EncryptDecrypt
     public EncryptDecrypt(String keyStr)
     {
         
-        
         byte[] keyBytes = DatatypeConverter.parseHexBinary(keyStr);
         this.key = keyBytes;
      
@@ -47,6 +46,7 @@ public class EncryptDecrypt
         //Initialize Key
         SecretKeyFactory factory = SecretKeyFactory.getInstance(KEYALGORITHM);
         SecretKey skey = factory.generateSecret(new DESedeKeySpec(key));
+        System.out.println("Key is : " + skey);
        
         //Initialize Cipher
         Cipher cipher = Cipher.getInstance(ALGORITHM);
@@ -62,9 +62,11 @@ public class EncryptDecrypt
         byte enhancedBytes[] = new byte[plainText.length + replayProtection.length];
         nextByte = copyBytes(enhancedBytes, nextByte, plainText);
         nextByte = copyBytes(enhancedBytes, nextByte, replayProtection);
+        System.out.println("After adding replay protection : " + DatatypeConverter.printHexBinary(enhancedBytes));
         
         //Encrypt enhancedBytes
         byte encryptedData [] = cipher.doFinal(enhancedBytes);
+        System.out.println("Encrypted Data : " + DatatypeConverter.printHexBinary(encryptedData));
         
         //Add IV to encryptedData
         byte[] iv = cipher.getIV();    //get IV 8 bytes        
@@ -75,9 +77,10 @@ public class EncryptDecrypt
         for (int i=0; i < encryptedData.length; i++) {
             transportData[iv.length +i] = encryptedData[i];
         }
-        
+        System.out.println("Encrypted Data : " + DatatypeConverter.printHexBinary(transportData));
         //HEX encode data and return encodedValue
-        String encodedValue = DatatypeConverter.printHexBinary(transportData);
+        String encodedValue = encode(transportData);
+//        String encodedValue = DatatypeConverter.printHexBinary(transportData);
         System.out.println("EncryptedAndEncodeValue : " + encodedValue);
         return encodedValue;
     }
@@ -96,7 +99,7 @@ public class EncryptDecrypt
         
         //Decode encoded data
         byte decodedBytes[] = DatatypeConverter.parseHexBinary(encodedData);
-        
+  //      byte decodedBytes[] = decode(encodedData);
         //Remove IV Transport
         byte ivBytes[] = new byte[8];
         for (int i=0; i<ivBytes.length;i++) {
@@ -128,6 +131,8 @@ public class EncryptDecrypt
                 rawData[i] = decryptedDataBytes[i];
             }
         }
+        
+        
         
         String decryptedString = new String(rawData, Charset.forName("UTF-8"));
         
@@ -174,5 +179,82 @@ public class EncryptDecrypt
           }
           return targetOffset + source.length;
     }
+    
+    
+    
+    private static String HITS = "0123456789ABCDEF";
+
+    /**
+     * Transforms a hexadecimal string to a byte array
+     *
+     * @return the byte array, or null if the passed String is null
+     * @exception IllegalArgumentException if the passed String is not haxadecimal 
+     * encoded
+     */
+    public byte[] decode(String hex) {
+    //public static byte[] toBytes(String hex) {
+
+        if (hex == null) {
+            return null;
+        } else if ((hex.length() % 2) != 0) {
+            throw new IllegalArgumentException(
+                    "Hex String length must be a multiple of 2.");
+        }
+
+        int length = hex.length() / 2;
+        byte[] result = new byte[length];
+        String h = hex.toUpperCase();
+
+        for (int i = 0; i < length; i++) {
+            char c = h.charAt(2 * i);
+            int index = HITS.indexOf(c);
+
+            if (index == -1) {
+                throw new IllegalArgumentException(
+                        "Hex String can't contain '" + c + "'");
+            }
+            int j = 16 * index;
+
+            c = h.charAt((2 * i) + 1);
+            index = HITS.indexOf(c);
+            if (index == -1) {
+                throw new IllegalArgumentException(
+                        "Hex String can't contain '" + c + "'");
+            }
+            j += index;
+            result[i] = (byte) (j & 0xFF);
+        }
+        return result;
+    }
+  
+    /**
+     * Transforms a byte array into a hexadecimal String
+     *
+     * @return the hexadecimal String, or null if the passed array is null
+     */
+    public String encode(byte[] b) {
+
+        if (b == null) {
+            return null;
+        }
+
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0; i < b.length; i++) {
+            int j = ((int) b[i]) & 0xFF;
+            char first = HITS.charAt(j / 16); 
+            char second = HITS.charAt(j % 16);
+
+            sb.append(first);
+            sb.append(second);
+        }
+        return sb.toString();
+    } 
+
+    
+    
+    
+    
+    
 }
     
